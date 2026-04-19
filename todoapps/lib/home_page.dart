@@ -5,12 +5,15 @@ import 'package:lottie/lottie.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'Controllers/todo_controller.dart'; 
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'Logins/login_page.dart';
+
+import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
+import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
 
 class HomePage extends StatelessWidget {
   HomePage({super.key});
-
-
-
+  final supabase = Supabase.instance.client.auth.currentUser;
 
   final TodoController controller = Get.put(TodoController());
   final _taskController = TextEditingController();
@@ -18,24 +21,52 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: CurvedNavigationBar(
+      backgroundColor: Colors.blueAccent,
+      items: [
+        CurvedNavigationBarItem(
+          child: Icon(Icons.home_outlined),
+          label: 'Home',
+        ),
+        CurvedNavigationBarItem(
+          child: Icon(Icons.search),
+          label: 'Search',
+        ),
+        CurvedNavigationBarItem(
+          child: Icon(Icons.chat_bubble_outline),
+          label: 'Chat',
+        ),
+        CurvedNavigationBarItem(
+          child: Icon(Icons.newspaper),
+          label: 'Feed',
+        ),
+        CurvedNavigationBarItem(
+          child: Icon(Icons.perm_identity),
+          label: 'Personal',
+        ),
+      ],
+      onTap: (index) {
+        // Handle button tap
+      },
+    ),
       backgroundColor: const Color(0xFFF5F7FB),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text("My Tasks", 
-          style: GoogleFonts.poppins(color: Colors.black, fontWeight: FontWeight.bold)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
-            onPressed: () => controller.supabase.auth.signOut(),
-          )
-        ],
+          style: GoogleFonts.poppins(color: Colors.black, fontWeight: FontWeight.bold)
+        ),
+        // actions: [
+        //   IconButton(
+        //     icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
+        //     onPressed: () => controller.supabase.auth.signOut(),
+        //   )
+        // ],
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
-
         if (controller.todos.isEmpty) {
           return Center(
             child: Column(
@@ -52,7 +83,6 @@ class HomePage extends StatelessWidget {
             ),
           );
         }
-
         return ListView.builder(
           padding: const EdgeInsets.all(20),
           itemCount: controller.todos.length,
@@ -62,6 +92,68 @@ class HomePage extends StatelessWidget {
           },
         );
       }),
+      //drawwer setting
+      drawer: Drawer(
+        child: ListView(
+          padding: const EdgeInsets.all(0),
+          children: [
+            DrawerHeader(
+              decoration: const BoxDecoration(
+                color: Colors.cyan,
+              ),
+              child: UserAccountsDrawerHeader(
+                decoration: const BoxDecoration(color: Colors.grey),
+                accountName: Text(
+                  supabase?.userMetadata?['name'] ?? 
+                  'No Name',
+                  style: const TextStyle(fontSize: 18),
+                ),
+                accountEmail: Text(
+                  supabase?.email ?? 'No Email',
+                  ),
+                currentAccountPictureSize: const Size.square(50),
+                currentAccountPicture: CircleAvatar(
+                  backgroundColor: const Color.fromARGB(255, 165, 255, 137),
+                  child: Text(
+                    (supabase?.email != null)
+                    ? supabase!.email![0].toUpperCase()
+                    : 'A',
+                    style: const TextStyle(fontSize: 30.0, color: Colors.blue),
+                  ),
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.person),
+              title: const Text(' My Profile '),
+              onTap: (){
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.menu),
+              title: const Text(' Kategori '),
+              onTap: (){
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text('LogOut'),
+              onTap: () async {
+                await Supabase.instance.client.auth.signOut();
+                // Tutup drawer
+                Get.back();
+                // Pindah ke login & hapus semua halaman sebelumnya
+                Get.offAll(() => LoginPage());
+              },
+            ),
+          ],
+        ),
+      ),
+
+    
+
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: Colors.blueAccent,
         icon: const Icon(Icons.add, color: Colors.white),

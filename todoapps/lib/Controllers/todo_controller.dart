@@ -13,7 +13,7 @@ class TodoController extends GetxController {
     super.onInit();
     _listenToTodos();
   }
-
+  
   void _listenToTodos() {
     supabase
         .from('todos')
@@ -41,3 +41,4 @@ class TodoController extends GetxController {
     await supabase.from('todos').delete().match({'id': id});
   }
 }
+
