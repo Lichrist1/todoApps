@@ -11,12 +11,32 @@ import 'Logins/login_page.dart';
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
 
+import 'models/todo_model.dart';
+
 class HomePage extends StatelessWidget {
   HomePage({super.key});
   final supabase = Supabase.instance.client.auth.currentUser;
 
   final TodoController controller = Get.put(TodoController());
   final _taskController = TextEditingController();
+
+  final TodoController2 controller2 = Get.put(TodoController2());
+  final TextEditingController input = TextEditingController();
+  var filter = 'all'.obs;
+
+  void showEditDialog(BuildContext context, int id, String oldTitle) {
+    TextEditingController edit = TextEditingController(text: oldTitle);
+
+    Get.defaultDialog(
+      title: "Edit To Do",
+      content: TextField(controller: edit),
+      textConfirm: "Save",
+      onConfirm: () {
+        controller2.editTodo(id, edit.text);
+        Get.back();
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,17 +90,65 @@ class HomePage extends StatelessWidget {
         if (controller.todos.isEmpty) {
           return Center(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Tambahkan file JSON Lottie di folder assets kamu
-                Lottie.network(
-                  'https://assets10.lottiefiles.com/packages/lf20_dmw3t0vg.json', // Karakter santai
-                  height: 250,
-                ),
-                Text("Hore! Tidak ada tugas hari ini", 
-                  style: GoogleFonts.poppins(color: Colors.grey, fontSize: 16)),
-              ],
-            ),
+                    children: [
+                      // Filter
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          ElevatedButton(
+                              onPressed: () => filter.value = 'all',
+                              child: Text("All")),
+                          ElevatedButton(
+                              onPressed: () => filter.value = 'done',
+                              child: Text("Done")),
+                          ElevatedButton(
+                              onPressed: () => filter.value = 'undone',
+                              child: Text("Pending")),
+                        ],
+                      ),
+
+                      // List
+                      Expanded(
+                        child: Obx(() {
+                          var list = controller2.todos;
+
+                          if (filter.value == 'done') {
+                            list = controller2.completed.obs;
+                          } else if (filter.value == 'undone') {
+                            list = controller2.pending.obs;
+                          }
+
+                          return ListView.builder(
+                            itemCount: list.length,
+                            itemBuilder: (context, index) {
+                              final todo = list[index];
+                              return TodoTile(
+                                todo: todo,
+                                onDelete: () => controller2.deleteTodo(todo.id),
+                                onToggle: () => controller2.toggleStatus(todo.id),
+                                onEdit: () => showEditDialog(
+                                    context, todo.id, todo.title),
+                              );
+                            },
+                          );
+                        }),
+                      ),
+                    ],
+                  ),
+
+                  
+            // child: Column(
+            //   mainAxisAlignment: MainAxisAlignment.center,
+            //   children: [
+            //     // Tambahkan file JSON Lottie di folder assets kamu
+            //     Lottie.network(
+            //       'https://assets10.lottiefiles.com/packages/lf20_dmw3t0vg.json', // Karakter santai
+            //       height: 250,
+            //     ),
+            //     Text("Hore! Tidak ada tugas hari ini", 
+            //       style: GoogleFonts.poppins(color: Colors.grey, fontSize: 16)),
+            //   ],
+            // ),
           );
         }
         return ListView.builder(
@@ -204,48 +272,90 @@ class HomePage extends StatelessWidget {
       ),
     );
   }
-
   void _showAddDialog(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, left: 25, right: 25, top: 25),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+  final TextEditingController input = TextEditingController();
+
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    builder: (context) {
+      return Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+          left: 16,
+          right: 16,
+          top: 16,
+        ),
+        child: Row(
           children: [
-            Text("Tugas Apa Selanjutnya?", style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18)),
-            const SizedBox(height: 15),
-            TextField(
-              controller: _taskController,
-              autofocus: true,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.grey[100],
-                hintText: "Contoh: Belajar Akuntansi...",
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
+            Expanded(
+              child: TextField(
+                controller: input,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: "Masukkan tugas...",
+                  border: OutlineInputBorder(),
+                ),
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(width: 8),
             ElevatedButton(
               onPressed: () {
-                controller.addTodo(_taskController.text);
-                _taskController.clear();
-                Get.back();
+                if (input.text.trim().isNotEmpty) {
+                  controller2.addTodo(input.text.trim());
+                  Navigator.pop(context);
+                }
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blueAccent,
-                minimumSize: const Size(double.infinity, 55),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-              ),
-              child: const Text("Simpan ke Daftar", style: TextStyle(color: Colors.white, fontSize: 16)),
-            ),
-            const SizedBox(height: 30),
+              child: Text("Add"),
+            )
           ],
         ),
-      ),
-    );
-  }
+      );
+    },
+  );
+}
+
+  // void _showAddDialog(BuildContext context) {
+  //   showModalBottomSheet(
+  //     context: context,
+  //     isScrollControlled: true,
+  //     backgroundColor: Colors.white,
+  //     shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+  //     builder: (context) => Padding(
+  //       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, left: 25, right: 25, top: 25),
+  //       child: Column(
+  //         mainAxisSize: MainAxisSize.min,
+  //         children: [
+  //           Text("Tugas Apa Selanjutnya?", style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18)),
+  //           const SizedBox(height: 15),
+  //           TextField(
+  //             controller: _taskController,
+  //             autofocus: true,
+  //             decoration: InputDecoration(
+  //               filled: true,
+  //               fillColor: Colors.grey[100],
+  //               hintText: "Contoh: Belajar Akuntansi...",
+  //               border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
+  //             ),
+  //           ),
+  //           const SizedBox(height: 20),
+  //           ElevatedButton(
+  //             onPressed: () {
+  //               controller.addTodo(_taskController.text);
+  //               _taskController.clear();
+  //               Get.back();
+  //             },
+  //             style: ElevatedButton.styleFrom(
+  //               backgroundColor: Colors.blueAccent,
+  //               minimumSize: const Size(double.infinity, 55),
+  //               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+  //             ),
+  //             child: const Text("Simpan ke Daftar", style: TextStyle(color: Colors.white, fontSize: 16)),
+  //           ),
+  //           const SizedBox(height: 30),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 }

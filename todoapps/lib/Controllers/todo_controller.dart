@@ -1,6 +1,8 @@
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../models/todo_model.dart';
+
 class TodoController extends GetxController {
   final supabase = Supabase.instance.client;
   
@@ -42,3 +44,33 @@ class TodoController extends GetxController {
   }
 }
 
+class TodoController2 extends GetxController {
+  var todos = <Todo>[].obs;
+  int idCounter = 0;
+
+  void addTodo(String title) {
+    todos.add(Todo(id: idCounter++, title: title));
+  }
+
+  void deleteTodo(int id) {
+    todos.removeWhere((todo) => todo.id == id);
+  }
+
+  void toggleStatus(int id) {
+    var todo = todos.firstWhere((t) => t.id == id);
+    todo.isDone = !todo.isDone;
+    todos.refresh();
+  }
+
+  void editTodo(int id, String newTitle) {
+    var todo = todos.firstWhere((t) => t.id == id);
+    todo.title = newTitle;
+    todos.refresh();
+  }
+  
+  List<Todo> get pending =>
+      todos.where((t) => !t.isDone).toList();
+
+  List<Todo> get completed =>
+      todos.where((t) => t.isDone).toList();
+}
