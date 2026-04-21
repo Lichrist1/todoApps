@@ -18,7 +18,7 @@ class HomePage extends StatelessWidget {
   final supabase = Supabase.instance.client.auth.currentUser;
 
   final TodoController controller = Get.put(TodoController());
-  final _taskController = TextEditingController();
+  // final _taskController = TextEditingController();
 
   final TodoController2 controller2 = Get.put(TodoController2());
   final TextEditingController input = TextEditingController();
@@ -34,7 +34,7 @@ class HomePage extends StatelessWidget {
       onConfirm: () {
         controller2.editTodo(id, edit.text);
         Get.back();
-      },
+      },  
     );
   }
 
@@ -49,16 +49,12 @@ class HomePage extends StatelessWidget {
           label: 'Home',
         ),
         CurvedNavigationBarItem(
-          child: Icon(Icons.search),
-          label: 'Search',
-        ),
-        CurvedNavigationBarItem(
           child: Icon(Icons.chat_bubble_outline),
-          label: 'Chat',
+          label: 'Tasks',
         ),
         CurvedNavigationBarItem(
-          child: Icon(Icons.newspaper),
-          label: 'Feed',
+          child: Icon(Icons.calendar_month_outlined),
+          label: 'Calender',  
         ),
         CurvedNavigationBarItem(
           child: Icon(Icons.perm_identity),
@@ -282,9 +278,9 @@ class HomePage extends StatelessWidget {
       return Padding(
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom,
-          left: 16,
-          right: 16,
-          top: 16,
+          left: 25,
+          right: 25,
+          top: 25,
         ),
         child: Row(
           children: [
