@@ -4,14 +4,27 @@ class Todo {
   int id;
   String title;
   bool isDone;
+  String category;
 
   Todo({
     required this.id,
     required this.title,
     this.isDone = false,
+     required this.category,
   });
 }
-
+Color getCategoryColor(String category) {
+  switch (category) {
+    case 'Kuliah':
+      return Colors.blue;
+    case 'Pribadi':
+      return Colors.green;
+    case 'Kerja':
+      return Colors.orange;
+    default:
+      return Colors.grey;
+  }
+}
 class TodoTile extends StatelessWidget {
   final Todo todo;
   final VoidCallback onDelete;
@@ -37,12 +50,27 @@ class TodoTile extends StatelessWidget {
                 : TextDecoration.none,
           ),
         ),
-        subtitle: Text(
-          todo.isDone ? "Completed" : "Pending",
-          style: TextStyle(
-            color: todo.isDone ? Colors.green : Colors.orange,
-          ),
-        ),
+        subtitle: Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    Text(
+      todo.isDone ? "Completed" : "Pending",
+      style: TextStyle(
+        color: todo.isDone ? Colors.green : Colors.orange,
+      ),
+    ),
+
+    SizedBox(height: 4),
+
+    Text(
+  todo.category,
+  style: TextStyle(
+    fontSize: 12,
+    color: getCategoryColor(todo.category), // 🔥 pakai di sini
+  ),
+),
+  ],
+),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

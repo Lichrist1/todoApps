@@ -48,10 +48,15 @@ class TodoController2 extends GetxController {
   var todos = <Todo>[].obs;
   int idCounter = 0;
 
-  void addTodo(String title) {
-    todos.add(Todo(id: idCounter++, title: title));
-  }
-
+  void addTodo(String title, String category) {
+  todos.add(
+    Todo(
+      id: idCounter++,
+      title: title,
+      category: category, // ✅ simpan kategori
+    ),
+  );
+}
   void deleteTodo(int id) {
     todos.removeWhere((todo) => todo.id == id);
   }

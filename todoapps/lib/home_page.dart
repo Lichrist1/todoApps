@@ -269,43 +269,70 @@ class HomePage extends StatelessWidget {
     );
   }
   void _showAddDialog(BuildContext context) {
-  final TextEditingController input = TextEditingController();
+   final TextEditingController input = TextEditingController();
+  String selectedCategory = 'Kuliah'; // default
 
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     builder: (context) {
-      return Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-          left: 25,
-          right: 25,
-          top: 25,
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: input,
-                autofocus: true,
-                decoration: InputDecoration(
-                  hintText: "Masukkan tugas...",
-                  border: OutlineInputBorder(),
-                ),
-              ),
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+              left: 16,
+              right: 16,
+              top: 16,
             ),
-            SizedBox(width: 8),
-            ElevatedButton(
-              onPressed: () {
-                if (input.text.trim().isNotEmpty) {
-                  controller2.addTodo(input.text.trim());
-                  Navigator.pop(context);
-                }
-              },
-              child: Text("Add"),
-            )
-          ],
-        ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: input,
+                  decoration: InputDecoration(
+                    hintText: "Masukkan tugas...",
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+
+                SizedBox(height: 10),
+
+                // ✅ DROPDOWN KATEGORI
+                DropdownButton<String>(
+                  value: selectedCategory,
+                  isExpanded: true,
+                  items: ['Kuliah', 'Pribadi', 'Kerja']
+                      .map((e) => DropdownMenuItem(
+                            value: e,
+                            child: Text(e),
+                          ))
+                      .toList(),
+                  onChanged: (val) {
+                    setState(() {
+                      selectedCategory = val!;
+                    });
+                  },
+                ),
+
+                SizedBox(height: 10),
+
+                ElevatedButton(
+                  onPressed: () {
+                    if (input.text.trim().isNotEmpty) {
+                      controller2.addTodo(
+                        input.text.trim(),
+                        selectedCategory, // ✅ kirim kategori
+                      );
+                      Navigator.pop(context);
+                    }
+                  },
+                  child: Text("Add"),
+                )
+              ],
+            ),
+          );
+        },
       );
     },
   );
