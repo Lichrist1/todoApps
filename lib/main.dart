@@ -21,7 +21,7 @@ void main() async {
     url: 'https://ykngepmhhdllhczdpqwx.supabase.co',
     anonKey: 'sb_publishable_51MagfVCx-dnEu64htfhgg_H6bQibw2',
   );
-  
+   
   runApp(MyApp());
 }
 
